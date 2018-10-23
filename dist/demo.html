@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>image-slider demo</title>
+	<style type="text/css">
+
+		.image-slider__images{
+			position: relative;
+			white-space: nowrap;
+			overflow: hidden;
+			font-size: 0;
+			width: 400px;
+		}
+		.image-slider__image{
+			position: absolute;
+			left: 0;
+			width: 100%;
+			font-size: 1rem;
+			display: inline-block;
+			vertical-align: middle;
+			transition: transform 500ms ease-out, opacity 500ms ease;
+			text-align: center;
+			opacity: 0.4;
+		}
+		.image-slider__image[data-index="0"]{
+			opacity: 1;
+			position: static;
+		}
+		button{
+			cursor: pointer;
+		}
+		.button--disabled{
+			opacity: 0.4;
+			cursor: default;
+		}
+
+	</style>
+</head>
+<body>
+
+	<div class="image-slider">
+
+			<div class="image-slider__nav--linear">
+				<button class="image-slider__nav--linear__prev"><</button>
+				<button class="image-slider__nav--linear__next">></button>
+			</div>
+
+			<div class="image-slider__images">
+
+				<div class="image-slider__image">
+					<img src="demo-image1.jpg"/>
+					<div class="image-slider__image__caption">
+						<h3>Image 1</h3>
+					</div>
+				</div>
+
+				<div class="image-slider__image">
+					<img src="demo-image2.jpg"/>
+					<div class="image-slider__image__caption">
+						<h3>Image 2</h3>
+					</div>
+				</div>
+
+				<div class="image-slider__image">
+					<img src="demo-image3.jpg"/>
+					<div class="image-slider__image__caption">
+						<h3>Image 3</h3>
+					</div>
+				</div>
+
+			</div>
+
+			<div class="image-slider__nav--pagination">
+				<button class="image-slider__nav--pagination__item ">Image 1</button>
+				<button class="image-slider__nav--pagination__item ">Image 2</button>
+				<button class="image-slider__nav--pagination__item ">Image 3</button>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript" src="ImageSlider.js"></script>
+	<script type="text/javascript">
+		var sliderElement = document.querySelector(".image-slider")
+		var options = {
+			autoplay: 3000
+		}
+		var slider = new ImageSlider( sliderElement, options )
+	</script>
+</body>
+</html>

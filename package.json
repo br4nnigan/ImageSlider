@@ -1,0 +1,30 @@
+{
+  "name": "ImageSlider",
+  "version": "1.0.0",
+  "description": "A simple image slider",
+  "main": "src/ImageSlider.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/br4nnigan/ImageSlider.git"
+  },
+  "author": "laz.brannigan@gmail.com",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/br4nnigan/ImageSlider/issues"
+  },
+  "homepage": "https://github.com/br4nnigan/ImageSlider#readme",
+  "dependencies": {
+    "Static.js": "gist:b6454cf8fe004ee9f0264aa301007202",
+    "css-transition": "git+https://github.com/br4nnigan/css-transition.git",
+    "hammerjs": "^2.0.8"
+  },
+  "devDependacies": {
+    "browserify": "^16.2.2"
+  },
+  "scripts": {
+    "postinstall": "browserify src/ImageSlider.js > dist/ImageSlider.js"
+  }
+}
