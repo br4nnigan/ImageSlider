@@ -4,7 +4,7 @@
   "description": "A simple image slider",
   "main": "src/ImageSlider.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postinstall": "browserify src/ImageSlider.js > dist/ImageSlider.js"
   },
   "repository": {
     "type": "git",
@@ -23,8 +23,5 @@
   },
   "devDependacies": {
     "browserify": "^16.2.2"
-  },
-  "scripts": {
-    "postinstall": "browserify src/ImageSlider.js > dist/ImageSlider.js"
   }
 }

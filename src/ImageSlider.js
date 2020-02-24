@@ -7,6 +7,7 @@ function ImageSlider( element, options ) {
 		destroy: destroy
 	}
 	var classes = {
+		INITIALIZED: "image-slider--initialized",
 		PAGINATION: "image-slider__nav--pagination",
 		PAGINATION_ITEM: "image-slider__nav--pagination__item",
 		NAV: "image-slider__nav--linear",
@@ -79,6 +80,10 @@ function ImageSlider( element, options ) {
 		});
 
 		setIndex(0);
+
+		setTimeout(function () {
+			element.classList.add( classes.INITIALIZED );
+		}, 100); // 1 frame is not enough for which reason?
 	}
 
 	function destroy() {
@@ -203,7 +208,6 @@ function ImageSlider( element, options ) {
 			case -1:
 				if (options.endlessMode) {
 					value = images.length - 1;
-					break;
 				} else {
 					return;
 				}
@@ -211,7 +215,6 @@ function ImageSlider( element, options ) {
 			case images.length:
 				if (options.endlessMode) {
 					value = 0;
-					break;
 				} else {
 					return;
 				}
