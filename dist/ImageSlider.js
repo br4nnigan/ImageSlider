@@ -1,5 +1,7 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 var Static = function(){};
+	Static.version = "0.2.5";
+	Static.debug = 0;
 
 Static.each = function (elements, callbackFN) {
 	if ( Static.isArrayLike(elements) ) {
@@ -45,6 +47,42 @@ Static.isArrayLike = function(item) {
 		)
 	);
 }
+
+Static.loadStyle = function (url) {
+	return new Promise(function (resolve, reject) {
+		var element = document.createElement("link");
+			element.setAttribute("type", "text/css");
+			element.setAttribute("rel", "stylesheet");
+			element.onload = function () {
+				if ( Static.debug ) {
+					console.log("Static.loadStyle loaded", url);
+				}
+				resolve(url);
+			};
+			element.onerror = function () {
+				reject(url);
+			};
+		document.head.appendChild(element);
+		element.setAttribute("href", url);
+	});
+}
+Static.loadScript = function (url) {
+	return new Promise(function (resolve, reject) {
+		var element = document.createElement("script");
+			element.setAttribute("async", "");
+			element.onload = function () {
+				if ( Static.debug ) {
+					console.log("Static.loadScript loaded", url);
+				}
+				resolve(url);
+			};
+			element.onerror = function () {
+				reject(url);
+			};
+		document.body.appendChild(element);
+		element.setAttribute("src", url);
+	});
+}
 Static.doWhen = function (callback, conditionalCallback, interval) {
 
 	var privateWrapper = interval ? function (callback) {
@@ -69,7 +107,9 @@ Static.parseJSON = function( string ) {
 	}
 	return data;
 }
-
+Static.preventDefault = function (event) {
+	event.preventDefault();
+}
 Static.http = {};
 Static.http.getUrlParams = function() {
 
@@ -130,6 +170,30 @@ Static.http.request = function (url, onSuccess, onError, options) {
 	}
 	xhr.send( options.data );
 }
+Static.http.isSameHost = function isSameHost(href1, href2) {
+
+	var host1, host2;
+
+	if ( typeof href1 == "string" ) {
+		var el = document.createElement("a");
+			el.setAttribute("href", href1);
+		host1 = el.host;
+	} else if ( typeof href1 == "object" && href1 !== null && href1.host ) {
+		host1 = href1.host;
+	}
+
+	if ( typeof href2 == "string" ) {
+		var el = document.createElement("a");
+			el.setAttribute("href", href2);
+		host2 = el.host;
+	} else if ( typeof href2 == "object" && href2 !== null && href2.host ) {
+		host2 = href2.host;
+	}
+
+	if ( host1 && host2 ) {
+		return host1 === host2;
+	}
+}
 Static.http.isSamePath = function(href1, href2) {
 
 	href1 = href1.replace(/#.*$/, "").replace(/\/$/, ""); // remove hash and trailing slash
@@ -169,6 +233,24 @@ Static.http.requestDom = function (url, onSuccess, onError, options) {
 
 Static.dom = {};
 
+Static.dom._ready = function () {
+	var r = document.readyState;
+	return (r == "complete" || r == "interactive");
+}
+Static.dom.ready = function (callback) {
+	if ( Static.dom._ready() ) {
+		callback();
+	} else {
+		var e;
+		e = function () {
+			if ( Static.dom._ready() ) {
+				callback();
+				document.removeEventListener("readystatechange", e);
+			}
+		}
+		document.addEventListener("readystatechange", e);
+	}
+}
 Static.dom.style = function (element, properties, value) {
 	if ( typeof properties == "object" ) {
 		for (prop in properties) {
@@ -208,6 +290,49 @@ Static.dom.swapChildren = function(el1, el2) {
 		parent.insertBefore(document.createTextNode(" "), parent.children[i1 + 1]);
 	}
 }
+Static.dom.insertAt = function ( element, parent, index ) {
+
+	var referenceElementAfter = parent.children[index - 1];
+	if ( referenceElementAfter ) {
+		if ( element == referenceElementAfter ) {
+			return;
+		}
+		return Static.dom.insertAfter( element, parent.children[index - 1])
+	}
+
+	var referenceElementBefore = parent.children[index];
+	if ( referenceElementBefore ) {
+		if ( element == referenceElementBefore ) {
+			return;
+		}
+		return Static.dom.insertBefore( element, parent.children[0] )
+	}
+
+	parent.appendChild( element );
+}
+Static.dom.insertAfter = function ( element, referenceElement ) {
+	if ( referenceElement.nextElementSibling ) {
+		return Static.dom.insertBefore( element, referenceElement.nextElementSibling );
+	} else {
+		var p = referenceElement.parentNode;
+		if ( p ) {
+			return p.appendChild( element );
+		}
+	}
+}
+Static.dom.insertBefore = function ( element, referenceElement ) {
+	var p = referenceElement.parentNode;
+	if ( p ) {
+		return p.insertBefore( element, referenceElement );
+	}
+}
+Static.dom.removeNode = function ( node ) {
+
+	var parent = node.parentNode;
+	if ( parent ) {
+		parent.removeChild( node );
+	}
+}
 Static.dom.closest = function (el, selector) {
 
 	var closest;
@@ -239,25 +364,6 @@ Static.dom.indexOf = function (child, nodeList) {
 	}
 	return -1;
 }
-
-Static.dom._ready = function () {
-	var r = document.readyState;
-	return (r == "complete" || r == "interactive");
-}
-Static.dom.ready = function (callback) {
-	if ( Static.dom._ready() ) {
-		callback();
-	} else {
-		var e;
-		e = function () {
-			if ( Static.dom._ready() ) {
-				callback();
-				document.removeEventListener("readystatechange", e);
-			}
-		}
-		document.addEventListener("readystatechange", e);
-	}
-}
 Static.dom.closestOf = function (el, elements) {
 
 	while ( el != null ) {
@@ -284,6 +390,9 @@ Static.dom.contains = function(nodeList, node){
 }
 
 Static.dom.listeners = [];
+// features:
+// once parameter
+// resizeend even
 Static.dom.attachListener = function (element, type, callback, capture, once) {
 
 	var callbackWrapper = function ( event ) {
@@ -344,12 +453,33 @@ Static.dom.onResizeEnd = function (callback) {
 }
 Static.dom.onResizeEndDelay = 250;
 Static.dom._onResizeEnd = function () {
-
 	Static.each(Static.dom.listeners, function (listener) {
 		if ( listener.type == "resizeend" ) {
 			listener.callback();
 		}
 	});
+}
+Static.dom.createEvent = function ( properties ) {
+	var event = null;
+	var type = (typeof properties == "object" ? properties.type : properties )
+	if ( type ) {
+		if ( typeof(Event) === "function" ) {
+			event = new Event(type);
+		} else {
+			event = document.createEvent("Event");
+			event.initEvent(type, true, true);
+		}
+		if ( typeof properties == "object" ) {
+			for (prop in properties) {
+				if (properties.hasOwnProperty(prop)) {
+					if ( prop != "type" ) {
+						Object.defineProperty(event, prop, {value: properties[prop], enumerable: true});
+					}
+				}
+			}
+		}
+	}
+	return event;
 }
 
 if ( typeof module == "object" ) {
@@ -3010,6 +3140,7 @@ function ImageSlider( element, options ) {
 		destroy: destroy
 	}
 	var classes = {
+		INITIALIZED: "image-slider--initialized",
 		PAGINATION: "image-slider__nav--pagination",
 		PAGINATION_ITEM: "image-slider__nav--pagination__item",
 		NAV: "image-slider__nav--linear",
@@ -3082,6 +3213,10 @@ function ImageSlider( element, options ) {
 		});
 
 		setIndex(0);
+
+		requestAnimationFrame(function () {
+			element.classList.add( classes.INITIALIZED );
+		});
 	}
 
 	function destroy() {
@@ -3269,12 +3404,7 @@ function ImageSlider( element, options ) {
 			});
 			element.setAttribute("data-index", value);
 			currentIndex = value;
-
 		}
-
-		Static.each(images, function (image) {
-			// body...
-		});
 	}
 
 	function onNavRequest(event) {
